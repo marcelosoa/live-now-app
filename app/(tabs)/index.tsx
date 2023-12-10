@@ -1,31 +1,35 @@
-import { StyleSheet } from 'react-native';
+import { User, onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator } from 'react-native';
+import { auth } from '../../config/firebase/firebaseConfig';
 
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
+import Home from './home';
+import Login from '../(stacks)/login';
 
-export default function TabOneScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
-  );
+export type accountModel = {
+  email: string,
+  password: string,
+  id?: string,
+  token?: string
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+export default function TabOneScreen() {
+  const [loading, setLoading ] = useState<boolean>(false)
+  const [account, setAccount] = useState<User | null>(null)
+
+  useEffect(() => {
+    setLoading(true)
+    onAuthStateChanged(auth, (account) => {
+      setAccount(account)
+    })
+    setLoading(false)
+  }, [])
+
+  return loading ? (
+    <ActivityIndicator color={'#fff'} size={'small'}/>
+  ) : !account ? (
+    <Login />
+  ) : <Home />
+  
+}
+
